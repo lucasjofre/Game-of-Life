@@ -16,7 +16,7 @@ def main():
 
     # Initializing board
     board = Board()
-    board.draw_grid()
+    draw_grid()
 
     pause_flag = False
 
@@ -28,13 +28,13 @@ def main():
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                x = pos[0] // BLOCK_SIZE
-                y = pos[1] // BLOCK_SIZE
+                x = pos[0] // s.BLOCK_SIZE
+                y = pos[1] // s.BLOCK_SIZE
                 if board.matrix[y][x].state == 0:
                     board.matrix[y][x].state = 1
                 else:
                     board.matrix[y][x].state = 0
-                board.matrix[y][x].draw_block(position=(x, y))
+                draw_block(block=board.matrix[y][x], position=(x, y))
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     print(f'entered pause: {pause_flag}')
@@ -53,14 +53,26 @@ def main():
                             board.matrix[y][x].state = 0
                         elif alive_neighbours >= 4:
                             board.matrix[y][x].state = 0
-                    item.draw_block(position=(x, y))
+                    draw_block(block=board.matrix[y][x], position=(x, y))
 
         board.aux_matrix = deepcopy(board.matrix)
         pygame.display.update()
         clock.tick(60)
 
 
-# todo: create an update display funtion, i dont need  to only update at the end of the loop
+# todo: create an update display function, i dont need to only update at the end of the loop
+
+def draw_grid() -> None:
+    for i in range(0, s.WINDOWS_WIDTH, s.BLOCK_SIZE):
+        pygame.draw.line(screen, s.GREY, (0, i), (s.WINDOWS_WIDTH, i), s.GRID_WIDTH)
+        pygame.draw.line(screen, s.GREY, (i, 0), (i, s.WINDOWS_HEIGHT), s.GRID_WIDTH)
+
+
+def draw_block(block: Block, position: tuple) -> None:
+    pygame.draw.rect(screen, block.color, pygame.Rect(position[0] * s.BLOCK_SIZE + s.GRID_WIDTH,
+                                                      position[1] * s.BLOCK_SIZE + s.GRID_WIDTH,
+                                                      s.BLOCK_SIZE - s.GRID_WIDTH, s.BLOCK_SIZE - s.GRID_WIDTH))
+
 
 if __name__ == '__main__':
     main()
