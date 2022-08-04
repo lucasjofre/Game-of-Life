@@ -2,7 +2,6 @@ import settings as s
 from copy import deepcopy
 import random
 from block import Block
-import pygame
 
 
 class Board:
@@ -22,16 +21,11 @@ class Board:
     def get_alive_neighbours(self, x: int, y: int) -> int:
         total = 0
         for y_neighbour in range(y - 1, y + 2):
+            if y_neighbour in [self.y_dim, -1]:
+                continue
             for x_neighbour in range(x - 1, x + 2):
-                try:
-                    total += self.aux_matrix[y_neighbour][x_neighbour].state
-                except IndexError as e:
+                if x_neighbour in [self.x_dim, -1]:
                     continue
-                # if ((x_neighbour, y_neighbour) == (x, y) or
-                #         x_neighbour == self.x_dim - 1 or
-                #         y_neighbour == self.y_dim - 1 or
-                #         x_neighbour == 0 or
-                #         y_neighbour == 0):
-                #     continue
+                total += self.aux_matrix[y_neighbour][x_neighbour].state
         total -= self.aux_matrix[y][x].state
         return total

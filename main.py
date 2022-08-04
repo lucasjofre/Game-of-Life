@@ -1,6 +1,5 @@
 import pygame
 from sys import exit
-import random
 from copy import deepcopy
 import settings as s
 from board import Board
@@ -26,19 +25,20 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                x = pos[0] // s.BLOCK_SIZE
-                y = pos[1] // s.BLOCK_SIZE
-                if board.matrix[y][x].state == 0:
-                    board.matrix[y][x].state = 1
-                else:
-                    board.matrix[y][x].state = 0
-                draw_block(block=board.matrix[y][x], position=(x, y))
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     print(f'entered pause: {pause_flag}')
                     pause_flag = False if pause_flag else True
+
+        if pygame.mouse.get_pressed()[0]:
+            pos = pygame.mouse.get_pos()
+            x = pos[0] // s.BLOCK_SIZE
+            y = pos[1] // s.BLOCK_SIZE
+            if board.matrix[y][x].state == 0:
+                board.matrix[y][x].state = 1
+            else:
+                board.matrix[y][x].state = 0
+            draw_block(block=board.matrix[y][x], position=(x, y))
 
         # Apply Game of Life's rules
         if not pause_flag:
@@ -57,10 +57,8 @@ def main():
 
         board.aux_matrix = deepcopy(board.matrix)
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(20)
 
-
-# todo: create an update display function, i dont need to only update at the end of the loop
 
 def draw_grid() -> None:
     for i in range(0, s.WINDOWS_WIDTH, s.BLOCK_SIZE):

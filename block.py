@@ -15,4 +15,4 @@ class Block:
         if value not in [0, 1]:
             raise ValueError("State should be either 0 or 1")
         self._state = value
-        self.color = s.BLACK if self.state == 0 else s.WHITE
+        self.color = s.BLACK if self.state == 0 else s.GREEN
