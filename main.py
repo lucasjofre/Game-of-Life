@@ -4,6 +4,7 @@ from copy import deepcopy
 import settings as s
 from board import Board
 from block import Block
+import time
 
 
 def main():
@@ -14,10 +15,14 @@ def main():
     clock = pygame.time.Clock()
 
     # Initializing board
-    board = Board()
+    board = Board(initial_pattern='x')
     draw_grid()
+    for y in range(board.y_dim):
+        for x in range(board.x_dim):
+            draw_block(block=board.matrix[y][x], position=(x, y))
+    pygame.display.update()
 
-    pause_flag = False
+    pause_flag = True
 
     while True:
         # Checking for close button press

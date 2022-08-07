@@ -4,7 +4,7 @@ import settings as s
 class Block:
     def __init__(self, state: int) -> None:
         self.state = state
-        self.color = s.BLACK
+        self.color = s.GREEN if self.state == 1 else s.BLACK
 
     @property
     def state(self) -> int:
@@ -16,3 +16,4 @@ class Block:
             raise ValueError("State should be either 0 or 1")
         self._state = value
         self.color = s.BLACK if self.state == 0 else s.GREEN
+
