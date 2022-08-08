@@ -1,7 +1,7 @@
 import settings as s
 from copy import deepcopy
 import random
-from block import Block
+import numpy as np
 
 
 class Board:
@@ -14,8 +14,8 @@ class Board:
         self.matrix = self.initialize_matrix(initial_pattern)
         self.aux_matrix = deepcopy(self.matrix)
 
-    def initialize_matrix(self, initial_pattern) -> list:
-        if initial_pattern not in ['x', 'plus', 'random', 'null']:
+    def initialize_matrix(self, initial_pattern: str) -> np.array:
+        if initial_pattern not in ['x', 'plus', 'random', '5', 'null']:
             raise ValueError('Please choose a valid initial pattern')
         elif initial_pattern == 'x':
             return self.x_pattern()
@@ -25,46 +25,22 @@ class Board:
             return self.random_pattern()
         elif initial_pattern == 'null':
             return self.null_pattern()
+        elif initial_pattern == '5':
+            return self.divisible_5_pattern()
 
-    def get_alive_neighbours(self, x: int, y: int) -> int:
-        total = 0
-        for y_neighbour in range(y - 1, y + 2):
-            if y_neighbour in [self.y_dim, -1]:
-                continue
-            for x_neighbour in range(x - 1, x + 2):
-                if x_neighbour in [self.x_dim, -1]:
-                    continue
-                total += self.aux_matrix[y_neighbour][x_neighbour].state
-        total -= self.aux_matrix[y][x].state
-        return total
+    def plus_pattern(self) -> np.array:
+        return np.array([[1 if (self.x_dim // 2 == x) or (self.y_dim // 2 == y) else 0 for x in range(self.x_dim)]
+                         for y in range(self.y_dim)])
 
-    def plus_pattern(self):
-        matrix = []
-        for y in range(self.y_dim):
-            row = []
-            for x in range(self.x_dim):
-                if (self.x_dim // 2 == x) or (self.y_dim // 2 == y):
-                    row.append(Block(state=1))
-                else:
-                    row.append(Block(state=0))
-            matrix.append(row)
-        return matrix
+    def x_pattern(self) -> np.array:
+        return np.array([[1 if (x == y) or (x == self.x_dim - 1 - y) else 0 for x in range(self.x_dim)]
+                         for y in range(self.y_dim)])
 
-    def x_pattern(self):
-        matrix = []
-        for y in range(self.y_dim):
-            row = []
-            for x in range(self.x_dim):
-                if (x == y) or (x == self.x_dim - 1 - y):
-                    row.append(Block(state=1))
-                else:
-                    row.append(Block(state=0))
-            matrix.append(row)
-        return matrix
+    def random_pattern(self) -> np.array:
+        return np.array([[random.randint(0, 1) for x in range(self.x_dim)] for y in range(self.y_dim)])
 
-    def random_pattern(self):
-        return [[Block(state=random.randint(0, 1)) for x in range(self.x_dim)] for y in range(self.y_dim)]
+    def null_pattern(self) -> np.array:
+        return np.array([[0 for x in range(self.x_dim)] for y in range(self.y_dim)])
 
-    def null_pattern(self):
-        return [[Block(state=0) for x in range(self.x_dim)] for y in range(self.y_dim)]
-
+    def divisible_5_pattern(self) -> np.array:
+        return np.array([[1 if not (x * y) % 5 else 0 for x in range(self.x_dim)] for y in range(self.y_dim)])
