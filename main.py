@@ -53,7 +53,7 @@ def main():
             board.aux_matrix = deepcopy(board.matrix)
         pygame.display.update()
         print(clock.get_fps())
-        clock.tick(120)
+        clock.tick()
 
 
 def draw_grid() -> None:
@@ -62,6 +62,7 @@ def draw_grid() -> None:
         pygame.draw.line(screen, s.GREY, (i, 0), (i, s.WINDOWS_HEIGHT), s.GRID_WIDTH)
 
 
+# todo: write a function to determine the color of the cell based on its previous value
 def draw_block(state: int, position: tuple) -> None:
     color = s.BLACK if state == 0 else s.GREEN
     pygame.draw.rect(screen, color, pygame.Rect(position[0] * s.BLOCK_SIZE,
