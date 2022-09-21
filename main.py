@@ -1,5 +1,5 @@
 import pygame
-from sys import exit
+from sys import exit, argv
 from copy import deepcopy
 import settings as s
 from board import Board
@@ -10,12 +10,13 @@ import numpy as np
 def main():
     global screen, clock
     pygame.init()
+    initial_pattern = argv[1] if len(argv) > 1 else 'x'
     screen = pygame.display.set_mode((s.WINDOWS_WIDTH, s.WINDOWS_HEIGHT))
     pygame.display.set_caption('Game of Life')
     clock = pygame.time.Clock()
 
     # Initializing board
-    board = Board(initial_pattern='5')
+    board = Board(initial_pattern=initial_pattern)
     # draw_grid()
     for y in range(board.y_dim):
         for x in range(board.x_dim):
@@ -35,16 +36,6 @@ def main():
                     print(f'entered pause: {pause}')
                     pause = False if pause else True
 
-        if pygame.mouse.get_pressed()[0]:
-            pos = pygame.mouse.get_pos()
-            x = pos[0] // s.BLOCK_SIZE
-            y = pos[1] // s.BLOCK_SIZE
-            if board.matrix[y][x] == 0:
-                board.matrix[y][x] = 1
-            else:
-                board.matrix[y][x] = 0
-            draw_block(state=board.matrix[y][x], position=(x, y))
-
         # Apply Game of Life's rules
         if not pause:
             changed_positions, board.matrix = update_state(board.matrix, board.aux_matrix, board.x_dim, board.y_dim)
@@ -52,7 +43,7 @@ def main():
                 draw_block(state=board.matrix[y][x], position=(x, y))
             board.aux_matrix = deepcopy(board.matrix)
         pygame.display.update()
-        print(clock.get_fps())
+        # print(clock.get_fps())
         clock.tick()
 
 
