@@ -6,6 +6,7 @@ import numpy as np
 
 class Board:
     def __init__(self, initial_pattern='x'):
+        self.patterns = ['x', 'plus', 'random', '5']
         self.x_dim = s.WINDOWS_WIDTH // s.BLOCK_SIZE
         self.y_dim = s.WINDOWS_HEIGHT // s.BLOCK_SIZE
         # Allow only whole numbers for x_dim and y_dim
@@ -15,18 +16,17 @@ class Board:
         self.aux_matrix = deepcopy(self.matrix)
 
     def initialize_matrix(self, initial_pattern: str) -> np.array:
-        if initial_pattern not in ['x', 'plus', 'random', '5', 'null']:
-            raise ValueError('Please choose a valid initial pattern')
-        elif initial_pattern == 'x':
-            return self.x_pattern()
-        elif initial_pattern == 'plus':
-            return self.plus_pattern()
-        elif initial_pattern == 'random':
-            return self.random_pattern()
-        elif initial_pattern == 'null':
-            return self.null_pattern()
-        elif initial_pattern == '5':
-            return self.divisible_5_pattern()
+        match initial_pattern:
+            case 'x':
+                return self.x_pattern()
+            case 'plus':
+                return self.plus_pattern()
+            case 'random':
+                return self.random_pattern()
+            case '5':
+                return self.divisible_5_pattern()
+            case _:
+                raise ValueError(f"Please choose a valid initial pattern between: {', '.join(self.patterns)}")
 
     def plus_pattern(self) -> np.array:
         return np.array([[1 if (self.x_dim // 2 == x) or (self.y_dim // 2 == y) else 0 for x in range(self.x_dim)]
