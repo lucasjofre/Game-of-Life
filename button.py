@@ -2,12 +2,14 @@ import pygame
 import settings as s
 
 class Button:
-    def __init__(self, x, y, width, height, text=None, color=s.LIGHT_GREY, highlighted_color=s.WHITE, function=None, params=None):
-        self.image_normal = pygame.Surface((width, height))
-        self.image_normal.fill(color)
-
-        self.image_highlighted = pygame.Surface((width, height))
-        self.image_highlighted.fill(highlighted_color)
+    def __init__(self, x, y, width, height, text=None, image=None, highlighted_color=s.WHITE, function=None, params=None):
+        if image is not None:
+            self.image_normal = self.load_and_scale_image(image, (width, height))
+            self.image_highlighted = self.create_highlighted_image(self.image_normal, highlighted_color)
+        else:
+            self.image_normal = pygame.Surface((width, height))
+            self.image_highlighted = pygame.Surface((width, height))
+            self.image_highlighted.fill(highlighted_color)
 
         self.image = self.image_normal
         self.rect = self.image.get_rect()
@@ -23,6 +25,26 @@ class Button:
 
         self.function = function
         self.params = params
+
+    def load_and_scale_image(self, image, size):
+        # Convert PIL Image to Pygame Surface
+        mode = image.mode
+        size = image.size
+        data = image.tobytes()
+
+        pygame_image = pygame.image.fromstring(data, size, mode)
+
+        # Scale the image
+        pygame_image = pygame.transform.scale(pygame_image, size)
+
+        return pygame_image
+
+    def create_highlighted_image(self, image, color):
+        highlighted_image = pygame.Surface(image.get_size())
+        highlighted_image.fill(color)
+        highlighted_image.blit(image, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        return highlighted_image
 
     def update(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):

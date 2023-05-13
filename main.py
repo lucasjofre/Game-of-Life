@@ -21,6 +21,7 @@ class Game:
             self.draw()
             pygame.display.update()
             self.clock.tick(self.current_scene.get_fps())
+            print("FPS: ", self.clock.get_fps())
 
     def handle_events(self):
         for event in pygame.event.get():

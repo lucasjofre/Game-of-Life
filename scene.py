@@ -3,11 +3,12 @@ import pygame
 from button import Button
 from board import Board
 import settings as s
+from utils import text_to_image
 
 class Scene:
     def __init__(self, game):
         self.game = game
-        self.fps = 60  # default FPS
+        self.fps = 20  # default FPS
 
     def get_fps(self):
         return self.fps
@@ -25,35 +26,74 @@ class Scene:
 class MainMenuScene(Scene):
     def __init__(self, game):
         super().__init__(game)
-        self.fps = 10
-        self.start_button = Button(200, 200, 200, 100, 'Start', function=self.start_game)
-        # Initialize the board with the "Game of Life" pattern
+        self.start_clicked_time = None
+        self.current_column = 0
         self.board = Board()
+        board_size = (self.board.x_dim, self.board.y_dim)
         self.board.clear_board()
-        self.board.initialize_from_image('game_of_life.png')
+
+        # Initialize the "Game of Life" title
+        title_image = text_to_image("Game of Life", "8bit_arcade_in.ttf", 16, board_size)
+        self.board.initialize_from_image(title_image, y_offset=-15)
+
+        # Initialize the "Start" button
+        button_width, button_height = 400, 100  # Set the size of the button
+        button_image = text_to_image("Start", "8bit_arcade_in.ttf", 100, (button_width, button_height), bg_color=s.PURPLE)
+        button_x_offset = (s.WINDOWS_WIDTH - button_width) // 2 
+        button_y_offset = (s.WINDOWS_HEIGHT - button_height) // 2
+        self.start_button = Button(button_x_offset, button_y_offset, button_width, button_height, image=button_image, function=self.start_game)
+
+        # self.start_button = Button(button_x_offset, button_y_offset, image=button_image, 
+        #                            text="Start", highlighted_color=s.WHITE, function=self.start_game)
+        
+        # Save the position and size of the "Start" button
+        # self.start_button_rect = pygame.Rect(button_x_offset, button_y_offset, button_image.width, button_image.height)
+
         self.start_time = pygame.time.get_ticks()
+
 
     def handle_events(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.start_button.is_over(event.pos):
+            if self.start_button.is_over(pygame.mouse.get_pos()):
                 self.start_button.click()
 
     def update(self):
-        # After 5 seconds, start applying the rules
-        if pygame.time.get_ticks() - self.start_time > 3000:
-            self.board.update_state()
+        self.board.update_state()
+
+        self.start_button.update()
+        # If the start button has been clicked
+        if self.start_clicked_time is not None:
+            # If enough time has passed since the last column was processed
+            if pygame.time.get_ticks() - self.start_clicked_time > 100:  # 100ms per column, adjust as needed
+                columns_to_process = 10  # Number of columns to process at once, adjust as needed
+                for _ in range(columns_to_process):
+                    if self.current_column < self.board.x_dim:
+                        self.board.immortal_to_normal(self.current_column)
+                        self.current_column += 1
+                self.start_clicked_time = pygame.time.get_ticks()
+
+            # If all columns have been processed, change the scene
+            if self.current_column >= self.board.x_dim:
+                pass
+                # self.game.change_scene(GameScene(self.game))
 
     def draw(self):
         # Draw the board
         for y in range(self.board.y_dim):
             for x in range(self.board.x_dim):
-                color = s.BLACK if self.board.matrix[y][x] == 0 else s.GREEN
+                if self.board.matrix[y][x] == 0:
+                    color = s.BLACK
+                elif self.board.matrix[y][x] == 1:
+                    color = s.GREEN
+                elif self.board.matrix[y][x] == 2:
+                    color = s.PURPLE  # Immortal cells are red
                 pygame.draw.rect(self.game.screen, color, pygame.Rect(x * s.BLOCK_SIZE, y * s.BLOCK_SIZE, s.BLOCK_SIZE, s.BLOCK_SIZE))
-        # Draw the button
+
         self.start_button.draw(self.game.screen)
 
+
     def start_game(self):
-        self.game.change_scene(GameScene(self.game))
+        self.start_clicked_time = pygame.time.get_ticks()
 
 
 class GameScene(Scene):
@@ -101,7 +141,6 @@ class GameScene(Scene):
     def handle_keydown(self, key):
         if key == pygame.K_SPACE:
             self.pause = not self.pause
-            print(f"Game pause state: {self.pause}")
         elif key == pygame.K_p:  # Press 'p' to switch to 'paint' mode
             self.mode = 'paint'
         elif key == pygame.K_e:  # Press 'e' to switch to 'erase' mode
@@ -148,7 +187,6 @@ class GameScene(Scene):
 
     def update_board(self):
         changed_positions = self.board.update_state()
-        print(f"Updating board. Changed positions: {changed_positions}")
         for x, y in changed_positions:
             self.draw_block(self.board.matrix[y][x], (x, y))
 

@@ -1,3 +1,4 @@
+import pygame
 import settings as s
 from copy import deepcopy
 import random
@@ -6,6 +7,7 @@ from PIL import Image
 
 class Board:
     def __init__(self, initial_pattern='x'):
+        HOVER = 3
         self.patterns = ['x', 'plus', 'random', '5']
         self.x_dim = s.WINDOWS_WIDTH // s.BLOCK_SIZE
         self.y_dim = s.WINDOWS_HEIGHT // s.BLOCK_SIZE
@@ -29,13 +31,23 @@ class Board:
             case _:
                 raise ValueError(f"Please choose a valid initial pattern between: {', '.join(self.patterns)}")
     
-    def initialize_from_image(self, image_path):
-        img = Image.open(image_path).convert('L')  # Convert image to grayscale
-        img.thumbnail((self.x_dim, self.y_dim))  # Resize image to fit the board
-        for x in range(img.width):
-            for y in range(img.height):
-                if img.getpixel((x, y)) < 128:  # If the pixel is more black than white
-                    self.matrix[y][x] = 1  # Set the cell to alive
+    def initialize_from_image(self, image, x_offset=0, y_offset=0):
+        img = image.convert('L')  # Convert image to grayscale
+        self.start_button_initial_cells = []
+        for y in range(img.height):
+            for x in range(img.width):
+                if y + y_offset < self.y_dim and x + x_offset < self.x_dim:  # Check if the index is within the array bounds
+                    if img.getpixel((x, y)) < 128:  # If the pixel is more black than white
+                        self.matrix[y + y_offset][x + x_offset] = 2  # Set the cell to alive and immortal
+                        if x_offset != 0 and y_offset != 0:  # This is the start button
+                            self.start_button_initial_cells.append((x + x_offset, y + y_offset))
+                    else:
+                        if random.random() < 0:  # 20% chance for a cell to be alive
+                            self.matrix[y + y_offset][x + x_offset] = 1
+
+
+    def immortal_to_normal(self, column):
+        self.matrix[:, column][self.matrix[:, column] == 2] = 1
 
     def change_pattern(self, pattern: str):
         self.clear_board()
@@ -78,6 +90,8 @@ class Board:
         changed_positions = []
         for y in range(self.y_dim):
             for x in range(self.x_dim):
+                if self.matrix[y][x] == 2:  # Skip immortal cells
+                    continue
                 total = self.get_neighbour_total(x, y)
                 if self.matrix[y][x] == 1 and (total < 2 or total > 3):
                     new_matrix[y][x] = 0
@@ -87,6 +101,7 @@ class Board:
                     changed_positions.append((x, y))
         self.matrix = new_matrix
         return changed_positions
+
 
 
     def toggle_cell(self, x, y):
